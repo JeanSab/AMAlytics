@@ -47,7 +47,7 @@ def getAll(r, submissionId, verbose=True):
 username = 'afirsttest'
 userAgent = "MyAppName/0.1 by " + username
 clientId = 'aRFvr_zLw5DU9g'
-clientSecret = "XJDn3Swh5qSJWVNA2xes1oi0_7U"
+clientSecret = ""
 
 r = praw.Reddit(user_agent=userAgent, client_id=clientId, client_secret=clientSecret)
 
