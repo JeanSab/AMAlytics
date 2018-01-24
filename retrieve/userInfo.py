@@ -3,8 +3,6 @@ import praw
 
 
 
-
-
 def getSubmitedSubs(author, limit=100):
     """
     get user submission information
@@ -14,7 +12,7 @@ def getSubmitedSubs(author, limit=100):
         if str(s.subreddit) in subNames:
             subNames[str(s.subreddit)] += 1
         else:
-            subNames[str(s.subreddit)] = 0
+            subNames[str(s.subreddit)] = 1
         
     return subNames
     
@@ -28,31 +26,45 @@ def getSubmitedComments(author):
         if str(s.subreddit) in subPosts:
             subPosts[str(s.subreddit)] += 1
         else:
-            subPosts[str(s.subreddit)] = 0
+            subPosts[str(s.subreddit)] = 1
         
     return subPosts
     
+
+def getUpvotedComments(author):
+    pass
+
+
+def getUpvotedSumissions(author):
+    pass
+    
+def userInfo(author):
     
     
+    info = {"creation_date" : author.created_utc}
     
+    print(dir(author))    
     
 
 
-username = 'afirsttest'
+
+username = 'CMonShowMe'
 userAgent = "afirsttest/0.1 by " + username
-clientId = 'aRFvr_zLw5DU9g'
-clientSecret = ""
 
-r = praw.Reddit(user_agent=userAgent, client_id=clientId, client_secret=clientSecret)
 
+r = praw.Reddit('afirsttest', user_agent=userAgent)
 
 
 
-submission = r.submission("")
+
+submission = r.submission("1u1pwy")
 comment = submission.comments[0]
 author = comment.author
 
 
 #user =  r.redditor(comment.author)
 
-print(getSubmitedComments(author))
+userInfo(author)
+
+
+print(type(r.redditor(author.name).created_utc))
