@@ -26,13 +26,18 @@ def getSubCommentsTree(comment, allComments, parentNode, verbose=True):
 
 	treeRep = []
 	
-	if(type(comment) != praw.models.reddit.comment.Comment):
-		print(type(comment))
 	
 	if(type(comment) == praw.models.reddit.more.MoreComments):
 		treeCom = {"comment_id" : comment.id, "author" : "", "body" : "", "replies" : treeRep}
 	else:
-		treeCom = {"comment_id" : comment.id, "author" : str(comment.author.name), "body" : comment.body, "replies" : treeRep}
+		if(comment.author == None):
+			author = None
+		else:
+			author = comment.author.name
+			
+		treeCom = {"comment_id" : comment.id, "author" : author, "body" : comment.body, "replies" : treeRep}
+		
+		
 	parentNode.append(treeCom)#add information to parent node
 
 	for child in replies:#for each reply, no leaf comments
