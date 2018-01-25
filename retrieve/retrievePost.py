@@ -25,7 +25,14 @@ def getSubCommentsTree(comment, allComments, parentNode, verbose=True):
 		replies = comment.replies #get corresponding comment forest
 
 	treeRep = []
-	treeCom = {"comment" : comment, "replies" : treeRep}
+	
+	if(type(comment) != praw.models.reddit.comment.Comment):
+		print(type(comment))
+	
+	if(type(comment) == praw.models.reddit.more.MoreComments):
+		treeCom = {"comment_id" : comment.id, "author" : "", "body" : "", "replies" : treeRep}
+	else:
+		treeCom = {"comment_id" : comment.id, "author" : str(comment.author.name), "body" : comment.body, "replies" : treeRep}
 	parentNode.append(treeCom)#add information to parent node
 
 	for child in replies:#for each reply, no leaf comments
@@ -34,7 +41,7 @@ def getSubCommentsTree(comment, allComments, parentNode, verbose=True):
 
 def getAll(r, submissionId, verbose=True):
 	submission = r.submission(submissionId)
-	comments = submission.comments #all top comments (as tree)
+	comments = submission.comments #all top comments (as comment forest)
 	commentsList = [] #comments as list
 	tree = []
 	for comment in comments: #for all top comments, get subcomments
@@ -43,13 +50,4 @@ def getAll(r, submissionId, verbose=True):
 
 
 
-username = 'afirsttest'
-userAgent = "MyAppName/0.1 by " + username
-clientId = 'aRFvr_zLw5DU9g'
-clientSecret = ""
 
-r = praw.Reddit(user_agent=userAgent, client_id=clientId, client_secret=clientSecret)
-
-res = getAll(r, "7s85ar")
-
-print(res)
