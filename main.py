@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import praw
 import json
 
@@ -7,19 +9,20 @@ import retrieve.retrievePost
 
 
 
-submId = "7ss950"
-r = praw.Reddit("afirsttest", user_agent="afirsttest V0.1 by u/CmonShowMe")
 
-amaSubmission = r.submission(submId)
+def getAllComments():
 
-#print(amaSubmission)
+	submId = "7ss950"
+	r = praw.Reddit("afirsttest", user_agent="afirsttest V0.1 by u/CmonShowMe")
+	amaSubmission = r.submission(submId)
+	allComments = retrieve.retrievePost.getAll(r, submId)
 
-allComments = retrieve.retrievePost.getAll(r, submId)
-
-with open('result.json', 'w') as fp:
-    json.dump(allComments, fp)
+	#with open('result.json', 'w') as fp:
+	#	json.dump(allComments, fp)
 
 
+
+getAllComments()
 
 #print(type(amaSubmission.comments[0]))
 #print(dir(amaSubmission.comments[0]))
