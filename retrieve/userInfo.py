@@ -2,11 +2,12 @@ import praw
 
 
 
-
-def getSubmitedSubs(author, limit=100, listingType="new"):
+def getSubmitedPosts(author, limit=100, listingType="new", verbose=True):
     """
     get user submission information
     """
+    if verbose is True:
+        print("getting info for " + str(author.name))
     subNames = {}
     for s in getattr(author.submissions, listingType)(limit=limit):
         if str(s.subreddit) in subNames:
