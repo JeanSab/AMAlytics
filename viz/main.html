@@ -40,13 +40,14 @@ var links_data = [
 var simulation = d3.forceSimulation()
     //.force("link", d3.forceLink().distance(null).id(function(d) { return d.id; }))
     //.force("link", d3.forceLink().distance(function(d) {return 5 + d._dist;}).strength(0).id(function(d) { return d.id; }))
-    .force("link", d3.forceLink().strength(function(d) {if(d._dist > 1) return 0.1; return 0.001;}).id(function(d) { return d.id; }))
+    .force("link", d3.forceLink().strength(function(d) {return 0; if(d._dist > 1) return 0.1; return 0.001;}).id(function(d) { return d.id; }))
     //.force("charge", d3.forceManyBody().strength(1))
     .force("collide_force", d3.forceCollide().radius(5))
     //.force("center_force", d3.forceCenter(width / 2, height / 2))
     .force("r", d3.forceRadial(function(d) {
                                  return d.type === "redditor" ? 100 : 500; 
                                  })
+                .strength(1)                 
                 .x(width / 2).y(height / 2))
     .force("box_force", box_force);
     
