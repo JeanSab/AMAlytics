@@ -42,7 +42,7 @@ var simulation = d3.forceSimulation()
     //.force("link", d3.forceLink().distance(function(d) {return 5 + d._dist;}).strength(0).id(function(d) { return d.id; }))
     .force("link", d3.forceLink().strength(function(d) {return 0; if(d._dist > 1) return 0.1; return 0.001;}).id(function(d) { return d.id; }))
     //.force("charge", d3.forceManyBody().strength(1))
-    .force("collide_force", d3.forceCollide().radius(5))
+    .force("collide_force", d3.forceCollide().radius(10).strength(1))
     //.force("center_force", d3.forceCenter(width / 2, height / 2))
     .force("r", d3.forceRadial(function(d) {
                                  return d.type === "redditor" ? 100 : 500; 
@@ -53,7 +53,7 @@ var simulation = d3.forceSimulation()
     
 var data = "hello";
 console.log(data);
-d3.json("./user_stat.json", function(error, json) {
+d3.json("./data/user_stat.json", function(error, json) {
     if (error) return console.warn(error);
         
     //create clean node data
@@ -79,6 +79,7 @@ d3.json("./user_stat.json", function(error, json) {
     
     simulation.force("link")
       .links(link_data);
+
 
 
 
@@ -121,13 +122,7 @@ d3.json("./user_stat.json", function(error, json) {
              d.fy = null;
              })
              */
-            ;  
-    link_data.forEach(function(e) {
-         console.log(e["source"] + "{}" + e["target"]);
-         if(e["source"] == "puta_mejor") {
-             console.log("*" + e);
-             }
-        });
+
 
           
     var drag_handler = d3.drag()
@@ -150,6 +145,7 @@ function nodeData(rawData) {
     
     var nodes = [];
     var list = [];//id as list to check duplication
+    var listw = {};
     Object.keys(rawData).forEach(function(e) {
         nodes.push({"id": e, "type":"redditor"});
         
@@ -158,9 +154,26 @@ function nodeData(rawData) {
                 //console.log("adding node: " + e1);
                 nodes.push({"id":e1, "type":"subreddit"})
                 list.push(e1);
+                listw[e1] = 1
             }
+            else
+                listw[e1] += 1;
         });
     });
+    nodes.sort(function(a,b) {
+        if(a.type === "subreddit" && b.type === "redditor")
+            return -1;
+        if(a.type === "redditor" && b.type === "subreddit")
+            return +1;
+        if(a.type === "subreddit" && b.type ==="subreddit")
+            return listw[b.id] - listw[a.id];
+        return 0;
+        });
+        
+    nodes.forEach(function(e1) {
+       e1["_size"] = listw[e1]; 
+    });
+    
     return nodes;
 }
 
@@ -189,7 +202,11 @@ function linkData(rawData) {
     links.forEach(function(e1) {
        e1["_dist"] = listw[e1["target"]]; 
     });
-    console.log(links);
+    
+    links.sort(function(a, b) {
+        return b._dist - a._dist;
+    });
+    
     return links;
 }
 
