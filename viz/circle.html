@@ -42,13 +42,8 @@ var simulation = d3.forceSimulation()
     //.force("link", d3.forceLink().distance(function(d) {return 5 + d._dist;}).strength(0).id(function(d) { return d.id; }))
     .force("link", d3.forceLink().strength(function(d) {return 0; if(d._dist > 1) return 0.1; return 0.001;}).id(function(d) { return d.id; }))
     //.force("charge", d3.forceManyBody().strength(1))
-    .force("collide_force", d3.forceCollide().radius(10).strength(1))
+    .force("collide_force", d3.forceCollide().radius(6).strength(1))
     //.force("center_force", d3.forceCenter(width / 2, height / 2))
-    .force("r", d3.forceRadial(function(d) {
-                                 return d.type === "redditor" ? 100 : 500; 
-                                 })
-                .strength(1)                 
-                .x(width / 2).y(height / 2))
     .force("box_force", box_force);
 
 
@@ -57,14 +52,26 @@ d3.json("./data/test_data.json", function(error, json) {
     if (error) return console.warn(error);
         
     //create clean node data
-    nodes_data = nodeData(json);
-    console.log(nodes_data);
+    var nodes_data = nodeData(json);
     //create clean link data
-    link_data = linkData(json);
-    console.log(link_data);
-
+    var link_data = linkData(json);
+    
+    var tmp = nodes_data;
+    
+    nodes_data = subListsOf(nodes_data, ["redditor", "subreddit"]);
+    //console.log(nodes_data[0].concat(nodes_data[1]));
+    var concatNodes = (nodes_data[0]).concat(nodes_data[1]);
+    
+    simulation.force("r", d3.forceRadial(function(d) {
+                            if(d.type === "redditor")
+                                return circleRadius(nodes_data[0].length, 5, 1.2);
+                            return circleRadius(nodes_data[1].length, 5, 1.2); 
+                                 })
+                .strength(1)                 
+                .x(width / 2).y(height / 2));
+    
     simulation
-      .nodes(nodes_data)
+      .nodes(concatNodes)
       .on("tick", tickActions);
     
     
@@ -78,15 +85,19 @@ d3.json("./data/test_data.json", function(error, json) {
         .data(link_data)
         .enter().append("line")
           .attr("stroke-width", 1)
-          .style("stroke", function(d) {return "steelblue"});
+          .style("stroke", function(d) {return "steelblue"})
+          .on("mouseover", function(d) {
+                d3.select(this).style("stroke", "red")
+            })
+          .on("mouseout", function(d) {
+                d3.select(this).style("stroke", "steelblue");
+            });
           
-
-
     //draw circles for the link. Draw after links to cover lines
     var node = svg.append("g")
             .attr("class", "nodes")
             .selectAll("circle")
-            .data(nodes_data)
+            .data(concatNodes)
             .enter()
             .append("circle")
             .attr("r", function(d) {return 5} )
@@ -103,8 +114,9 @@ d3.json("./data/test_data.json", function(error, json) {
        
     drag_handler(node)
     ;
-
-
+    
+    node.call(initializeNodes);
+    
     
 });
 
@@ -202,10 +214,12 @@ function centering_force() {
     }
 }
 
-function initializeNodes(nodes, nodeRad) {
+function initializeNodes(selection) {
     
     var redditorNodes = [];
     var subredditNodes = [];
+    var nodes = simulation.nodes();
+    var nodeRad = 5;
     nodes.forEach(function(e) {
        
        if(e.type === "redditor") {
@@ -215,40 +229,27 @@ function initializeNodes(nodes, nodeRad) {
            subredditNodes.push(e);
        }
     });
-        
-    var circleRad = 0,
-    theta = 360 / redditorNodes.length,//node1-circle_center-node2 angle
-    sigma = (180 - theta) / 2,//circle_center-node1-node2 angle
-    gama = 180 - (90 + sigma);
-    //rectangle triangle
-
+      
+    var cx = width /2, cy = height/2;
     
-    var circleRad = (2 * nodeRad) / Math.tan(gama * (Math.PI / 180));
-    var cx = width / 2,
-    cy = height / 2;
-    d3.select("svg").append("circle").attr("r", 2 * circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
-    
+    var circleRad = circleRadius(redditorNodes.length, nodeRad, 1.2);
+    d3.select("svg").append("circle").attr("r", circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
     
     var currAngle = 0;
-
+    var theta = 360 / redditorNodes.length;
     redditorNodes.forEach(function(e) {
         e.x = cx + 2*circleRad * Math.cos(currAngle * (Math.PI / 180));
         e.y = cy + 2*circleRad * Math.sin(currAngle * (Math.PI / 180));
         currAngle += theta;
     });
     
-    // outer circle
-    circleRad = 0,
-    theta = 360 / subredditNodes.length,//node1-circle_center-node2 angle
-    sigma = (180 - theta) / 2,//circle_center-node1-node2 angle
-    gama = 180 - (90 + sigma);
-    //rectangle triangle
-
     
-    circleRad = (2 * nodeRad) / Math.tan(gama * (Math.PI / 180));
-    cx = width / 2,
-    cy = height / 2;
-    d3.select("svg").append("circle").attr("r", 2 * circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
+    // outer circle
+    circleRad = circleRadius(subredditNodes.length, nodeRad, 1.2)
+    d3.select("svg").append("circle").attr("r", circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
+    
+    var currAngle = 0;
+    var theta = 360 / subredditNodes.length;
     
     subredditNodes.forEach(function(e) {
         e.x = cx + 2*circleRad * Math.cos(currAngle * (Math.PI / 180));
@@ -258,6 +259,35 @@ function initializeNodes(nodes, nodeRad) {
     
 }
 
+function subListsOf(list, types) {
+    
+    returnList = [];//list of lists
+    
+    types.forEach(function(e) {
+        var subList = [];
+        for(var i = 0; i < list.length; i++) {
+            if(list[i].type === e)
+                subList.push(list[i]);
+        }
+        returnList.push(subList);
+    })
+    return returnList;
+}
+
+/*
+ *returns a radius size for a circle which would hold a certain number of nodes (on their center)
+ *each node equidistante from themselves. Distance is defined according to the node radius (by default
+ *the distance between two nodes is equal to 2 node radiuses
+ */
+function circleRadius(numberOfNodes, nodeRadius, distanceRate=2) {
+    
+    var circleRad = 0,
+    theta = 360 / numberOfNodes,//node1-circle_center-node2 angle
+    sigma = (180 - theta) / 2,//circle_center-node1-node2 angle
+    gama = 180 - (90 + sigma);
+    //rectangle triangle
+   return (distanceRate*nodeRadius) / Math.tan(gama * (Math.PI / 180));
+}
 
 /*
 * Drag event functions
@@ -284,15 +314,8 @@ function drag_end(d) {
 }
       
 function tickActions() {
-    
-    
-    
     //update circle positions each tick of the simulation 
     var node = d3.select("g.nodes").selectAll("circle");
-    
-    initializeNodes(simulation.nodes(), 5);
-    
-    console.log(node);
     
         node
         .attr("cx", function(d) { return d.x; })
@@ -308,8 +331,7 @@ function tickActions() {
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
-        
-    simulation.stop()
+    
 }
 
 
