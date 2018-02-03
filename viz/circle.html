@@ -29,13 +29,9 @@ var svg = d3.select("svg"),
 
 
 var Tickindex = 0;
-    
-    
-var nodes_data =  [
-    ];
-
-var links_data = [
-];
+var nodes_data =  [];
+var links_data = [];
+var nodeRadius = 6;
 
 var simulation = d3.forceSimulation()
     //.force("link", d3.forceLink().distance(null).id(function(d) { return d.id; }))
@@ -64,8 +60,8 @@ d3.json("./data/test_data.json", function(error, json) {
     
     simulation.force("r", d3.forceRadial(function(d) {
                             if(d.type === "redditor")
-                                return circleRadius(nodes_data[0].length, 5, 1.2);
-                            return circleRadius(nodes_data[1].length, 5, 1.2); 
+                                return circleRadius(nodes_data[0].length, nodeRadius, 1.2);
+                            return circleRadius(nodes_data[1].length, nodeRadius, 1.2); 
                                  })
                 .strength(1)                 
                 .x(width / 2).y(height / 2));
@@ -100,11 +96,24 @@ d3.json("./data/test_data.json", function(error, json) {
             .data(concatNodes)
             .enter()
             .append("circle")
-            .attr("r", function(d) {return 5} )
+            .attr("r", function(d) {return nodeRadius} )
             .attr("fill", function(d) {if(d.id == "tabb10") return "purple"; if (d.type == "redditor") return "brown"; return "green";})
             .on("mouseover", function(d) {
                 console.log(d.id);
-            });
+                d3.select("g.links").selectAll("line")
+                .style("stroke", function(d2) {
+                    if(d2.source.id == d.id) {
+                        console.log(d2);
+                        return "red";
+                    }
+                    return "steelblue";
+                })
+            })
+            .on("mouseout", function(d) {
+                d3.select("g.links").selectAll("line")
+                .style("stroke", "steelblue")
+                });
+            ;
      
        
     var drag_handler = d3.drag()
@@ -195,7 +204,7 @@ function linkData(rawData) {
 
 //custom force to put stuff in a box 
 function box_force() {
-    var radius = 5;
+    var radius = nodeRadius;
     for (var i = 0, n = nodes_data.length; i < n; ++i) {
         curr_node = nodes_data[i];
         curr_node.x = Math.max(radius, Math.min(width - radius, curr_node.x));
@@ -219,7 +228,7 @@ function initializeNodes(selection) {
     var redditorNodes = [];
     var subredditNodes = [];
     var nodes = simulation.nodes();
-    var nodeRad = 5;
+    var nodeRad = nodeRadius;
     nodes.forEach(function(e) {
        
        if(e.type === "redditor") {
