@@ -14,7 +14,7 @@ if __name__ == "__main__":
     submId = "7spdvg"
     subPostComms = retrieve.retrievePost.getAll(r, submId)
 
-    with open('user_stat_test.json', 'w') as outfile:
+    with open('user_stat_test2.json', 'w') as outfile:
         json.dump(subPostComms, outfile)
 
 

@@ -30,14 +30,15 @@ var links_data = [];
 var nodeRadius = 6;
 
 var simulation = d3.forceSimulation()
-    //.force("link", d3.forceLink().distance(null).id(function(d) { return d.id; }))
-    //.force("link", d3.forceLink().distance(function(d) {return 5 + d._dist;}).strength(0).id(function(d) { return d.id; }))
-    .force("link", d3.forceLink().strength(function(d) {return 0; if(d._dist > 1) return 0.1; return 0.001;}).id(function(d) { return d.id; }))
-    //.force("charge", d3.forceManyBody().strength(1))
-    .force("collide_force", d3.forceCollide().radius(6).strength(1))
-    //.force("center_force", d3.forceCenter(width / 2, height / 2))
-    .force("box_force", box_force);
-
+  .force("link", d3.forceLink().strength(function(d) {
+    return 0;
+    if (d._dist > 1) return 0.1;
+    return 0.001;
+  }).id(function(d) {
+    return d.id;
+  }))
+  .force("collide_force", d3.forceCollide().radius(6).strength(1))
+  .force("box_force", box_force);
 
 
 d3.json("./data/test_data.json", function(error, json) {
@@ -317,6 +318,9 @@ function drag_end(d) {
   d.fy = null;
 }
 
+/**
+ * [actions to be performed at each tick of a simulation]
+ */
 function tickActions() {
     //update circle positions each tick of the simulation
     var node = d3.select("g.nodes").selectAll("circle");
