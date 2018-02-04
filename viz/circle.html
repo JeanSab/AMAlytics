@@ -16,16 +16,12 @@
 <svg width="1800" height="900"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
-
-
 <script>
-
-//create somewhere to put the force directed graph
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height")
     ;
-    
+
 
 
 var Tickindex = 0;
@@ -46,35 +42,34 @@ var simulation = d3.forceSimulation()
 
 d3.json("./data/test_data.json", function(error, json) {
     if (error) return console.warn(error);
-        
+
     //create clean node data
     var nodes_data = nodeData(json);
     //create clean link data
     var link_data = linkData(json);
-    
     var tmp = nodes_data;
-    
+
     nodes_data = subListsOf(nodes_data, ["redditor", "subreddit"]);
     //console.log(nodes_data[0].concat(nodes_data[1]));
     var concatNodes = (nodes_data[0]).concat(nodes_data[1]);
-    
+
     simulation.force("r", d3.forceRadial(function(d) {
                             if(d.type === "redditor")
                                 return circleRadius(nodes_data[0].length, nodeRadius, 1.2);
-                            return circleRadius(nodes_data[1].length, nodeRadius, 1.2); 
+                            return circleRadius(nodes_data[1].length, nodeRadius, 1.2);
                                  })
-                .strength(1)                 
+                .strength(1)
                 .x(width / 2).y(height / 2));
-    
+
     simulation
       .nodes(concatNodes)
       .on("tick", tickActions);
-    
-    
+
+
     simulation.force("link")
       .links(link_data);
 
-    //draw lines for the links 
+    //draw lines for the links
     var link = svg.append("g")
           .attr("class", "links")
         .selectAll("line")
@@ -88,7 +83,7 @@ d3.json("./data/test_data.json", function(error, json) {
           .on("mouseout", function(d) {
                 d3.select(this).style("stroke", "steelblue");
             });
-          
+
     //draw circles for the link. Draw after links to cover lines
     var node = svg.append("g")
             .attr("class", "nodes")
@@ -114,19 +109,19 @@ d3.json("./data/test_data.json", function(error, json) {
                 .style("stroke", "steelblue")
                 });
             ;
-     
-       
+
+
     var drag_handler = d3.drag()
        .on("start", drag_start)
        .on("drag", drag_drag)
        .on("end", drag_end);
-       
+
     drag_handler(node)
     ;
-    
+
     node.call(initializeNodes);
-    
-    
+
+
 });
 
 
@@ -134,13 +129,13 @@ d3.json("./data/test_data.json", function(error, json) {
 
 //
 function nodeData(rawData) {
-    
+
     var nodes = [];
     var list = [];//id as list to check duplication
     var listw = {};
     Object.keys(rawData).forEach(function(e) {
         nodes.push({"id": e, "type":"redditor"});
-        
+
         Object.keys(rawData[e]).forEach(function(e1) {
             if(! list.includes(e1)) {
                 //console.log("adding node: " + e1);
@@ -161,26 +156,26 @@ function nodeData(rawData) {
             return listw[b.id] - listw[a.id];
         return 0;
         });
-        
+
     nodes.forEach(function(e1) {
-       e1["_size"] = listw[e1]; 
+       e1["_size"] = listw[e1];
     });
-    
+
     return nodes;
 }
 
 function linkData(rawData) {
-    
+
     var links = [];
     var list = [];
     var listw = {};
-    
+
     Object.keys(rawData).forEach(function(e) {
-        
+
         Object.keys(rawData[e]).forEach(function(e1) {
-               
+
             links.push({"source":e, "target":e1, "amount":rawData[e][e1]});
-            
+
             if(! list.includes(e1)) {
                 list.push(e1);
                 listw[e1] = 1;
@@ -188,21 +183,21 @@ function linkData(rawData) {
             else
                 listw[e1] += 1;
         });
-        
+
     });
-    
+
     links.forEach(function(e1) {
-       e1["_dist"] = listw[e1["target"]]; 
+       e1["_dist"] = listw[e1["target"]];
     });
-    
+
     links.sort(function(a, b) {
         return b._dist - a._dist;
     });
-    
+
     return links;
 }
 
-//custom force to put stuff in a box 
+//custom force to put stuff in a box
 function box_force() {
     var radius = nodeRadius;
     for (var i = 0, n = nodes_data.length; i < n; ++i) {
@@ -214,7 +209,7 @@ function box_force() {
 
 
 function centering_force() {
-    
+
     for (var i = 0, n = nodes_data.length; i < n; ++i) {
         curr_node = nodes_data[i];
         //if curr_node is subreddit
@@ -224,26 +219,26 @@ function centering_force() {
 }
 
 function initializeNodes(selection) {
-    
+
     var redditorNodes = [];
     var subredditNodes = [];
     var nodes = simulation.nodes();
     var nodeRad = nodeRadius;
     nodes.forEach(function(e) {
-       
+
        if(e.type === "redditor") {
            redditorNodes.push(e);
-       } 
+       }
        else {
            subredditNodes.push(e);
        }
     });
-      
+
     var cx = width /2, cy = height/2;
-    
+
     var circleRad = circleRadius(redditorNodes.length, nodeRad, 1.2);
     d3.select("svg").append("circle").attr("r", circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
-    
+
     var currAngle = 0;
     var theta = 360 / redditorNodes.length;
     redditorNodes.forEach(function(e) {
@@ -251,27 +246,27 @@ function initializeNodes(selection) {
         e.y = cy + 2*circleRad * Math.sin(currAngle * (Math.PI / 180));
         currAngle += theta;
     });
-    
-    
+
+
     // outer circle
     circleRad = circleRadius(subredditNodes.length, nodeRad, 1.2)
     d3.select("svg").append("circle").attr("r", circleRad).attr("cx", cx).attr("cy", cy).attr("fill", "none").attr("stroke", "black");
-    
+
     var currAngle = 0;
     var theta = 360 / subredditNodes.length;
-    
+
     subredditNodes.forEach(function(e) {
         e.x = cx + 2*circleRad * Math.cos(currAngle * (Math.PI / 180));
         e.y = cy + 2*circleRad * Math.sin(currAngle * (Math.PI / 180));
         currAngle += theta;
     });
-    
+
 }
 
 function subListsOf(list, types) {
-    
+
     returnList = [];//list of lists
-    
+
     types.forEach(function(e) {
         var subList = [];
         for(var i = 0; i < list.length; i++) {
@@ -289,7 +284,7 @@ function subListsOf(list, types) {
  *the distance between two nodes is equal to 2 node radiuses
  */
 function circleRadius(numberOfNodes, nodeRadius, distanceRate=2) {
-    
+
     var circleRad = 0,
     theta = 360 / numberOfNodes,//node1-circle_center-node2 angle
     sigma = (180 - theta) / 2,//circle_center-node1-node2 angle
@@ -302,7 +297,7 @@ function circleRadius(numberOfNodes, nodeRadius, distanceRate=2) {
 * Drag event functions
 **/
 //drag handler
-//d is the node 
+//d is the node
 function drag_start(d) {
  if (!d3.event.active) simulation.alphaTarget(0.3).restart();//alpha will go up to 0.3, keeping the graph active!!
    d.fx = d.x;//a node with a defined node.fx has node.x reset to this value and node.vx set to zero
@@ -321,26 +316,26 @@ function drag_end(d) {
   d.fx = null;
   d.fy = null;
 }
-      
+
 function tickActions() {
-    //update circle positions each tick of the simulation 
+    //update circle positions each tick of the simulation
     var node = d3.select("g.nodes").selectAll("circle");
-    
+
         node
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; });
-        
-    //update link positions 
+
+    //update link positions
     //simply tells one end of the line to follow one node around
     //and the other end of the line to follow the other node around
-    
+
     var link = d3.selectAll("line");
         link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
-    
+
 }
 
 
