@@ -35,5 +35,17 @@ def getSubmitedComments(author, limit=100, listingType="new", verbose=True):
 
 
 def userInfo(author):
+    """returns information from a specific author.
 
+    Parameters
+    ----------
+    author : praw.models.Redditor
+        a working Redditor instance.
+
+    Returns a dictionary containing relevant information.
+    -------
+    type
+        dict.
+
+    """
     return {"creation_date" : author.created_utc, "comment_karma": author.comment_karma, "link_karma": author.link_karma}

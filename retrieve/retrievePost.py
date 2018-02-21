@@ -1,7 +1,7 @@
 import praw
 
 
-class Post:
+class Post(object):
 
     def __init__(self, postId, r, allComments=True):
         """initialize Post instance
@@ -77,7 +77,7 @@ class Post:
         for child in replies:#for each reply, if replies exist, child instance of Comment
             self.getSubCommentslist(child, allComments, verbose=verbose)
 
-    def getQandATree(self, authorName):
+    def getQandATreeForest(self, authorName):
         """get a forest of questions and answers (each answer has a list comment answer replies)
 
         Parameters
