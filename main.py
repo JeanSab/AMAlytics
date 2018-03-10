@@ -12,7 +12,7 @@ if __name__ == "__main__":
     r = praw.Reddit("afirsttest", user_agent="afirsttest V0.1 by u/CmonShowMe")
     submId = "7uypv6"
     p = Post(submId, r)
-    qa = p.getQandATree("TriviaHawaii")
+    qa = p.getQandATreeForest("TriviaHawaii")
 
     with open('qa.json', 'w') as fp:
         json.dump(qa, fp)

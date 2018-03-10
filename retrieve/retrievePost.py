@@ -108,6 +108,26 @@ class Post(object):
 
         return qaTreeForest
 
+
+    def compareQandA(self, qaTreeForest):
+        """compares user in q&a tree forest.
+
+        Parameters
+        ----------
+        qaTreeForest : list obtained by calling Post.getQandATreeForest
+            list of dictionaries. Each dictionary has a question with a dictionary of answers.
+
+        Returns a dictionary with an analysis of users.
+        -------
+        type
+            dict.
+        """
+        for tree in qaTreeForest:
+            print(tree["author"])
+
+        pass
+
+
 #####
 ##### functions (deprecated)
 #####
