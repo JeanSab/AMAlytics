@@ -1,4 +1,6 @@
 import praw
+from . import userInfo
+import pandas
 
 
 class Post(object):
@@ -108,6 +110,24 @@ class Post(object):
 
         return qaTreeForest
 
+    def getTopProfile():
+        userStats = {}
+
+        for comm in self.commentTree:
+            body = comm['body']
+            commId = comm['comment_id']
+            authorName = comm['author']
+
+            if(authorName is not None) and (authorName != ""):
+                print("user: -" + authorName + "-")
+                userStats[authorName] = userInfo.getSubmitedPosts(r.redditor(authorName), limit=100, listingType="new", verbose=False)
+
+        return  userStats
+
+
+    def compareTopProfiles():
+        pass
+
 
     def compareQandA(self, qaTreeForest):
         """compares user in q&a tree forest.
@@ -126,6 +146,23 @@ class Post(object):
             print(tree["author"])
 
         pass
+
+    def compareUsers(self, userNameList, limit=100):
+        userCompDict = {}
+        users = {}
+        for u in userNameList:
+            try:
+                if u not in users:
+                    users[u] = userInfo.User(u, self.r)
+            except userInfo.InvalidUserData:
+                pass
+
+        for u in users:
+            userCompDict[users[u].name] = {}
+            for u1 in users:
+                userCompDict[users[u].name][users[u1].name] = users[u].compareScore(users[u1], limit=limit)
+
+        return userCompDict
 
 
 #####
@@ -193,6 +230,7 @@ def getAll(r, submissionId, verbose=True):
     for comment in comments: #for all top comments, get subcomments
         getSubCommentsTree(comment, tree, verbose=verbose, counter=counter)
     return tree["replies"]
+
 
 
 def topProfile(r, commentTree):
