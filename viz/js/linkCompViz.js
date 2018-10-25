@@ -5,7 +5,7 @@ var svg = d3.select("svg"),
     height = +svg.attr("height")
     ;
 
-var GRATTR = {"SUB_RAD" : 10, "RDT_RAD" : 10};
+var GRATTR = {"SUB_RAD" : 10, "RDT_RAD" : 10, "SUB_OFS" : 50 };
 
 d3.json("./data/test_data.json", function(error, json) {
     if (error) return console.warn(error);
@@ -22,8 +22,9 @@ d3.json("./data/test_data.json", function(error, json) {
         .data(link_data)
         .enter().append("path")
           .attr("stroke-width", 0.5)
-          .attr("d", function(d) {return "M" + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y})
-          .style("stroke", function(d) {return "steelblue"});
+          .attr("d", function(d) {return getCurvedPath(d.source.x, d.source.y, d.target.x, d.target.y);})
+          .style("stroke", function(d) {return "steelblue"})
+          .style("fill", "transparent");
 
     var node = svg.append("g")
             .attr("class", "nodes")
@@ -126,6 +127,18 @@ function setNodeCoord(nodes, xoffset=50, yoffset=10*GRATTR.SUB_RAD) {
 }
 
 
+function getCurvedPath(x1, y1, x2=GRATTR.SUB_OFS*30, y2, curve=0.5) {
+  if(curve < 0 && curve > 1) throw "invalid curve";
+  var path = "";
+  x2=GRATTR.SUB_OFS*30;
+  path +=  "M" + x1 + " " + y1
+       + " C " + x2*curve + " " + y1
+       + ", " + x1*curve + " " + y2
+       + ", " + x2 + " " + y2;
+
+  return path;
+}
+
 
 function getGraphData(rawData, verbose=false) {
   var nodes = [];
@@ -145,13 +158,13 @@ function getGraphData(rawData, verbose=false) {
               nodes.push(target);
               list.push(e1);
               listw[e1] = 1
-              dnodes["e1"] = target;
+              dnodes[e1] = target;
           }
           else {
               listw[e1] += 1;
             }
 
-          links.push({"source":source, "target":target, "amount":rawData[e][e1]});
+          links.push({"source":source, "target":dnodes[e1], "amount":rawData[e][e1]});
       });
   });
   nodes.sort(function(a,b) {
