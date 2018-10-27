@@ -66,9 +66,9 @@ function labelNodes(d, n=3) {
 
   var txtCoords = [getCirclePoint(d.x, d.y, 337.5, d.r + 20), getCirclePoint(d.x, d.y, 0, d.r + 20), getCirclePoint(d.x, d.y, 22.5, d.r + 20)];
 
-  txtCoords[0].txt = d.id;
-  txtCoords[1].txt = "place holder";
-  txtCoords[2].txt = "place holder";
+  txtCoords[0].txt = "subreddit: " + d.id;
+  txtCoords[1].txt = "number of posts: place holder";
+  txtCoords[2].txt = "subscribers: place holder";
 
   tmp = this;
   txtCoords.forEach(function(e) {
@@ -127,14 +127,16 @@ function setNodeCoord(nodes, xoffset=50, yoffset=10*GRATTR.SUB_RAD) {
 }
 
 
-function getCurvedPath(x1, y1, x2=GRATTR.SUB_OFS*30, y2, curve=0.5) {
-  if(curve < 0 && curve > 1) throw "invalid curve";
+function getCurvedPath(x1, y1, x2=GRATTR.SUB_OFS*30, y2, coeff=0.5) {
+  if(coeff < 0 && coeff > 1) throw "invalid curve";
   var path = "";
+
   x2=GRATTR.SUB_OFS*30;
+  var curve = (x2-x1)*coeff;
   path +=  "M" + x1 + " " + y1
-       + " C " + x2*curve + " " + y1
-       + ", " + x1*curve + " " + y2
-       + ", " + x2 + " " + y2;
+       + " C " + (x2 - curve) + " " + y1
+       + ", "  + (x1 + curve) + " " + y2
+       + ", "  + x2 + " " + y2;
 
   return path;
 }
